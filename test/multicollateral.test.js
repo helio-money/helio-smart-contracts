@@ -161,7 +161,7 @@ describe('===INTERACTION2-Multicollateral===', function () {
         await vat.connect(deployer)["file(bytes32,uint256)"](ethers.utils.formatBytes32String("Line"), "20000" + rad); // Normalized USB
         await vat.connect(deployer)["file(bytes32,bytes32,uint256)"](collateral, ethers.utils.formatBytes32String("line"), "2000" + rad);
         // await vat.connect(deployer)["file(bytes32,bytes32,uint256)"](collateral, ethers.utils.formatBytes32String("spot"), "500" + rad);
-        await vat.connect(deployer)["file(bytes32,bytes32,uint256)"](collateral, ethers.utils.formatBytes32String("dust"), "100000000000000000" + ray); //0.1 rad
+        await vat.connect(deployer)["file(bytes32,bytes32,uint256)"](collateral, ethers.utils.formatBytes32String("dust"), "1" + ray); //0.1 rad
 
         await spot.connect(deployer)["file(bytes32,bytes32,address)"](collateral, ethers.utils.formatBytes32String("pip"), oracle.address);
         await spot.connect(deployer)["file(bytes32,bytes32,uint256)"](collateral, ethers.utils.formatBytes32String("mat"), "1250000000000000000000000000"); // Liquidation Ratio
@@ -269,6 +269,17 @@ describe('===INTERACTION2-Multicollateral===', function () {
         let locked = await interaction.locked(abnbc.address, signer1.address, {from: signer1.address});
         expect(locked.toString()).to.equal(ether("2").toString());
 
+        let estLiqPriceHAY2 = await interaction.estimatedLiquidationPriceHAY(
+            abnbc.address, signer1.address, ether("200").toString(), {from: signer1.address}
+        );
+        console.log("estLiqPriceHAY2 is: " + estLiqPriceHAY2.toString());
+        let estLiqPriceHAY = await interaction.estimatedLiquidationPriceHAY(
+            abnbc.address, signer1.address, ether("100").toString(), {from: signer1.address}
+        );
+        console.log("estLiqPriceHAY is: " + estLiqPriceHAY.toString());
+        expect(estLiqPriceHAY.toString()).to.equal(ether("25").toString());
+        console.log("estLiqPriceHAY is: " + estLiqPriceHAY.toString());
+
         // Locking collateral and borrowing USB
         // We want to draw 60 USB == `dart`
         // Maximum available for borrow = (2 * 400 ) * 0.8 = 640
@@ -345,12 +356,12 @@ describe('===INTERACTION2-Multicollateral===', function () {
         // console.log(vatState);
 
         let available = await interaction.availableToBorrow(abnbc.address, signer1.address, {from: signer1.address});
-        expect(available.toString()).to.equal(ether("640").toString());
+        expect(available.toString()).to.equal("639999999999999999998");
 
         let willBeAvailable = await interaction.willBorrow(
             abnbc.address, signer1.address, ether("1").toString(), {from: signer1.address}
         );
-        expect(willBeAvailable.toString()).to.equal(ether("960").toString());
+        expect(willBeAvailable.toString()).to.equal("959999999999999999998");
 
         // USB are burned, now we have to withdraw collateral
         // We will always withdraw all available collateral
@@ -396,13 +407,13 @@ describe('===INTERACTION2-Multicollateral===', function () {
         await interaction.payback(abnbc.address, dart, {from: signer2.address});
 
         borrowed2 = await interaction.borrowed(abnbc.address, signer2.address, {from: signer2.address});
-        expect(borrowed2.toString()).to.equal("0");
+        expect(borrowed2.toString()).to.equal("1");
 
         await interaction.borrowed(abnbc.address, signer1.address, {from: signer1.address});
         expect(borrowed.toString()).to.equal(dart);
     });
 
-    xit('rewards', async function() {
+    it('rewards', async function() {
         //deposit&borrow
         let dink = ether("2").toString();
         await abnbc.connect(signer1).approve(interaction.address, dink);

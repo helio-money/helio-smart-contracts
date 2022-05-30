@@ -8,6 +8,8 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeab
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "./hMath.sol";
 
+import "hardhat/console.sol";
+
     struct Sale {
         uint256 pos;  // Index in active array
         uint256 tab;  // HAY to raise       [rad]
@@ -153,6 +155,7 @@ contract Interaction is Initializable, UUPSUpgradeable, OwnableUpgradeable {
 
     EnumerableSet.AddressSet private usersInDebt;
 
+    uint256 constant WAD = 10 ** 18;
     uint256 constant RAD = 10 ** 45;
     uint256 constant RAY = 10 ** 27;
     uint256 constant YEAR = 365 * 24 * 3600; //seconds
@@ -324,7 +327,7 @@ contract Interaction is Initializable, UUPSUpgradeable, OwnableUpgradeable {
 
         IERC20Upgradeable(usb).safeTransferFrom(msg.sender, address(this), usbAmount);
         usbJoin.join(msg.sender, usbAmount);
-        (,uint256 rate,,,) = vat.ilks(collateralType.ilk);
+        (,uint256 rate,,,uint256 dust) = vat.ilks(collateralType.ilk);
         (, uint256 art) = vat.urns(collateralType.ilk, msg.sender);
         int256 dart = int256(hMath.mulDiv(usbAmount, 10 ** 27, rate));
         if (uint256(dart) * rate < usbAmount * (10 ** 27) &&
@@ -332,6 +335,12 @@ contract Interaction is Initializable, UUPSUpgradeable, OwnableUpgradeable {
         ) {
             dart += 1;
             // ceiling
+        }
+
+        // Trying to not left any dust
+        int256 leftover = hMath._mul(rate, int256(art)-dart);
+        if (uint256(leftover) < dust) {
+            dart += (leftover / int256(rate)) - 1;
         }
         vat.frob(collateralType.ilk, msg.sender, msg.sender, msg.sender, 0, - dart);
 
@@ -441,8 +450,8 @@ contract Interaction is Initializable, UUPSUpgradeable, OwnableUpgradeable {
         CollateralType memory collateralType = collaterals[token];
         _checkIsLive(collateralType.live);
 
-        (uint256 Art,,,,) = vat.ilks(collateralType.ilk);
-        return Art;
+        (uint256 Art, uint256 rate,,,) = vat.ilks(collateralType.ilk);
+        return hMath.mulDiv(Art, rate, 10 ** 27);
     }
 
     // Not locked user balance in aBNBc
@@ -503,16 +512,20 @@ contract Interaction is Initializable, UUPSUpgradeable, OwnableUpgradeable {
         return (int256(collateral) - int256(debt)) / 1e27;
     }
 
+    function liquidationPriceForDebt(bytes32 ilk, address usr, uint256 ink, uint256 art) internal view returns (uint256) {
+        (, uint256 rate,,,) = vat.ilks(ilk);
+        (,uint256 mat) = spotter.ilks(ilk);
+        uint256 backedDebt = (art * rate / 10 ** 36) * mat;
+        return backedDebt / ink;
+    }
+
     // Price of aBNBc when user will be liquidated
     function currentLiquidationPrice(address token, address usr) external view returns (uint256) {
         CollateralType memory collateralType = collaterals[token];
         _checkIsLive(collateralType.live);
 
         (uint256 ink, uint256 art) = vat.urns(collateralType.ilk, usr);
-        (, uint256 rate,,,) = vat.ilks(collateralType.ilk);
-        (,uint256 mat) = spotter.ilks(collateralType.ilk);
-        uint256 backedDebt = (art * rate / 10 ** 36) * mat;
-        return backedDebt / ink;
+        return liquidationPriceForDebt(collateralType.ilk, usr, ink, art);
     }
 
     // Price of aBNBc when user will be liquidated with additional amount of aBNBc deposited/withdraw
@@ -527,10 +540,29 @@ contract Interaction is Initializable, UUPSUpgradeable, OwnableUpgradeable {
         } else {
             ink += uint256(amount);
         }
-        (, uint256 rate, uint256 spot,,) = vat.ilks(collateralType.ilk);
+        return liquidationPriceForDebt(collateralType.ilk, usr, ink, art);
+    }
+
+    // Price of aBNBc when user will be liquidated with additional amount of HAY borrowed/payback
+    //positive amount mean HAYs are being borrowed. So art(debt) will increase
+    function estimatedLiquidationPriceHAY(address token, address usr, int256 amount) external view returns (uint256) {
+        CollateralType memory collateralType = collaterals[token];
+        _checkIsLive(collateralType.live);
+
+        (uint256 ink, uint256 art) = vat.urns(collateralType.ilk, usr);
+        require(amount >= - (int256(art)), "Cannot withdraw more than current amount");
+        (, uint256 rate,,,) = vat.ilks(collateralType.ilk);
         (,uint256 mat) = spotter.ilks(collateralType.ilk);
-        uint256 backedDebt = (art * rate / 10 ** 36) * mat;
-        return backedDebt / ink;
+        uint256 backedDebt = hMath.mulDiv(art, rate, 10 ** 36);
+        if (amount < 0) {
+            backedDebt = uint256(int256(backedDebt) + amount);
+        } else {
+            backedDebt += uint256(amount);
+        }
+//        console.log("Backed debt is:", backedDebt);
+//        console.log("Mat is:", mat);
+//        console.log("Ink is:", ink);
+        return hMath.mulDiv(backedDebt, mat, ink) / 10 ** 9;
     }
 
     // Returns borrow APR with 20 decimals.

@@ -12,7 +12,7 @@ const { VAT,
     Oracle,
     VOW, COLLATERAL_CE_ABNBC,
     INTERACTION, REAL_ABNBC, REWARDS, DOG
-} = require('../../addresses.json');
+} = require('../../addresses-stage2.json');
 const {ethers} = require("hardhat");
 
 async function main() {
@@ -36,7 +36,7 @@ async function main() {
 
     let spot = this.Spot.attach(SPOT);
 
-    await spot["file(bytes32,bytes32,address)"](collateral, ethers.utils.formatBytes32String("pip"), Oracle);
+    // await spot["file(bytes32,bytes32,address)"](collateral, ethers.utils.formatBytes32String("pip"), Oracle);
     await spot["file(bytes32,bytes32,uint256)"](collateral, ethers.utils.formatBytes32String("mat"), "1333333333333333333333333333"); // Liquidation Ratio
 
     await spot.poke(collateral);

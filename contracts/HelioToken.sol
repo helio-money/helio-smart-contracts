@@ -1,51 +1,28 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
-contract HelioToken is ERC20 {
+contract HelioToken is OwnableUpgradeable, ERC20Upgradeable {
 
-    event Start();
-    event Stop();
-
-    bool public  stopped;
-
-    // --- Auth ---
-    mapping (address => uint) public wards;
-    function rely(address usr) external auth { wards[usr] = 1; }
-    function deny(address usr) external auth { wards[usr] = 0; }
-    modifier auth {
-        require(wards[msg.sender] == 1, "HelioToken/not-authorized");
-        _;
+    function initialize()
+    external
+    initializer
+    {
+        __Ownable_init();
+        __ERC20_init_unchained("Helio Reward token", "HELIO");
     }
 
-    modifier stoppable {
-        require(!stopped, "helio-is-stopped");
-        _;
-    }
-
-    constructor() ERC20("Helio Reward token", "HELIO"){
-        wards[msg.sender] = 1;
-    }
-
-    function mint(address _to, uint256 _amount) external auth stoppable returns(bool) {
+    function mint(address _to, uint256 _amount) external onlyOwner returns(bool) {
         _mint(_to, _amount);
         return true;
     }
 
-    function burn(uint256 _amount) external auth stoppable returns(bool) {
+    function burn(uint256 _amount) external onlyOwner returns(bool) {
         _burn(msg.sender, _amount);
         return true;
-    }
-
-    function stop() public auth {
-        stopped = true;
-        emit Stop();
-    }
-
-    function start() public auth {
-        stopped = false;
-        emit Start();
     }
 }

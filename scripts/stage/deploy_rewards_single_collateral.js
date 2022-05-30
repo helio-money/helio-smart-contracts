@@ -5,6 +5,7 @@ const { VAT,
     COLLATERAL_CE_ABNBC, HELIO_TOKEN,
 } = require('../../addresses-stage2.json');
 const {ethers} = require("hardhat");
+const {ether} = require("@openzeppelin/test-helpers");
 
 async function main() {
     console.log('Running deploy script');
@@ -31,7 +32,7 @@ async function main() {
     console.log('Adding rewards pool');
     let collateral3 = ethers.utils.formatBytes32String(COLLATERAL_CE_ABNBC);
 
-    await helioToken.rely(rewards.address);
+    await helioToken.mint(rewards.address, ether("1000000").toString());
     await rewards.setHelioToken(helioToken.address);
     await rewards.initPool(ceBNBc, collateral3, "1000000001847694957439350500"); //6%
     // await interaction.setRewards(rewards.address);
