@@ -52,6 +52,7 @@ contract HelioRewards is OwnableUpgradeable, PausableUpgradeable, ReentrancyGuar
     }
 
     mapping(address => mapping(address => Pile)) public piles; // usr => token(collateral type) => time last realise
+    mapping(address => bool) public skipList;
     mapping(address => uint256) public claimedRewards;
     mapping(address => Ilk) public pools;
     address[] public poolsList;
@@ -88,6 +89,10 @@ contract HelioRewards is OwnableUpgradeable, PausableUpgradeable, ReentrancyGuar
         pool.rewardRate = newRate;
     }
 
+    function skipRewards(address skip) external onlyOwner {
+        skipList[skip] = true;
+    }
+
     // 1 HAY is helioPrice() helios
     function helioPrice() public view returns (uint256) {
         (bytes32 price, bool has) = oracle.peek();
@@ -108,6 +113,9 @@ contract HelioRewards is OwnableUpgradeable, PausableUpgradeable, ReentrancyGuar
     }
     //
     function claimable(address token, address usr) public poolInit(token) view returns (uint256) {
+        if (skipList[usr]) {
+            return 0;
+        }
         return piles[usr][token].amount + unrealisedRewards(token, usr);
     }
 
@@ -123,6 +131,9 @@ contract HelioRewards is OwnableUpgradeable, PausableUpgradeable, ReentrancyGuar
 
     //drop unrealised rewards
     function drop(address token, address usr) public {
+        if (skipList[usr]) {
+            return;
+        }
         Pile storage pile = piles[usr][token];
 
         pile.amount += unrealisedRewards(token, usr);
