@@ -96,14 +96,14 @@ contract GemJoin is GemJoinLike {
         live = 0;
         emit Cage();
     }
-    function join(address usr, uint wad) external {
+    function join(address usr, uint wad) external auth {
         require(live == 1, "GemJoin/not-live");
         require(int(wad) >= 0, "GemJoin/overflow");
         vat.slip(ilk, usr, int(wad));
         require(gem.transferFrom(msg.sender, address(this), wad), "GemJoin/failed-transfer");
         emit Join(usr, wad);
     }
-    function exit(address usr, uint wad) external {
+    function exit(address usr, uint wad) external auth {
         require(wad <= 2 ** 255, "GemJoin/overflow");
         vat.slip(ilk, msg.sender, -int(wad));
         require(gem.transfer(usr, wad), "GemJoin/failed-transfer");
@@ -154,12 +154,12 @@ contract UsbJoin is UsbGemLike {
             require(y == 0 || (z = x * y) / y == x);
         }
     }
-    function join(address usr, uint wad) external {
+    function join(address usr, uint wad) external auth {
         vat.move(address(this), usr, mul(ONE, wad));
         usb.burn(msg.sender, wad);
         emit Join(usr, wad);
     }
-    function exit(address usr, uint wad) external {
+    function exit(address usr, uint wad) external auth {
         require(live == 1, "UsbJoin/not-live");
         vat.move(msg.sender, address(this), mul(ONE, wad));
         usb.mint(usr, wad);

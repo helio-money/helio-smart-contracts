@@ -175,7 +175,7 @@ contract Dog is DogLike {
     // have too little collateral to be interesting to Keepers (debt taken from Vault < ilk.dust),
     // in which case the function reverts. Please refer to the code and comments within if
     // more detail is desired.
-    function bark(bytes32 ilk, address urn, address kpr) external returns (uint256 id) {
+    function bark(bytes32 ilk, address urn, address kpr) external auth returns (uint256 id) {
         require(live == 1, "Dog/not-live");
 
         (uint256 ink, uint256 art) = vat.urns(ilk, urn);

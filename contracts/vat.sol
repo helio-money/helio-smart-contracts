@@ -137,12 +137,12 @@ contract Vat is VatLike {
     function slip(bytes32 ilk, address usr, int256 wad) external auth {
         gem[ilk][usr] = _add(gem[ilk][usr], wad);
     }
-    function flux(bytes32 ilk, address src, address dst, uint256 wad) external {
+    function flux(bytes32 ilk, address src, address dst, uint256 wad) external auth {
         require(wish(src, msg.sender), "Vat/not-allowed");
         gem[ilk][src] = _sub(gem[ilk][src], wad);
         gem[ilk][dst] = _add(gem[ilk][dst], wad);
     }
-    function move(address src, address dst, uint256 rad) external {
+    function move(address src, address dst, uint256 rad) external auth {
         require(wish(src, msg.sender), "Vat/not-allowed");
         usb[src] = _sub(usb[src], rad);
         usb[dst] = _add(usb[dst], rad);
@@ -156,7 +156,7 @@ contract Vat is VatLike {
     }
 
     // --- CDP Manipulation ---
-    function frob(bytes32 i, address u, address v, address w, int dink, int dart) external {
+    function frob(bytes32 i, address u, address v, address w, int dink, int dart) external auth {
         // system is live
         require(live == 1, "Vat/not-live");
 
