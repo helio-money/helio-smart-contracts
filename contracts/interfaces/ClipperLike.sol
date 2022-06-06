@@ -28,6 +28,12 @@ interface ClipperLike {
         bytes calldata data
     ) external;
 
+    function redo(uint256 id, address kpr) external;
+
+    function upchost() external;
+
+    function getStatus(uint256 id) external view returns (bool, uint256, uint256, uint256);
+
     function kicks() external view returns (uint256);
 
     function count() external view returns (uint256);
