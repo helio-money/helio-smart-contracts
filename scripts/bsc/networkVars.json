@@ -1,0 +1,26 @@
+{
+  "BSC_MAINNET": "BSC_MAINNET_VARIABLES",
+
+  "m_aBNBc": "", 
+  "m_wBnb": "", 
+  "m_aBnbb": "", 
+  "m_dex": "", 
+  "m_pool": "",
+  "m_chainID": "56",
+
+
+  "BSC_TESTNET": "BSC_TESTNET_VARIABLES",
+
+  "t_aBNBc": "0x46dE2FBAf41499f298457cD2d9288df4Eb1452Ab", 
+  "t_wBnb": "0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd", 
+  "t_aBnbb": "", 
+  "t_dex": "0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3", 
+  "t_pool": "",
+  "t_chainID": "97",
+
+
+  "COMMON": "COMMON_NETWORK_VARIABLES",
+
+  "ilkString": "ceABNBc",
+  "multiSig": ""
+}
