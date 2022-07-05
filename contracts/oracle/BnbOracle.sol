@@ -25,6 +25,6 @@ contract BnbOracle {
         if (price < 0) {
             return 0;
         }
-        return bytes32(uint(price * (10**10)));
+        return bytes32(uint(price) * (10**10));
     }
 }
