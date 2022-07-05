@@ -250,7 +250,7 @@ async function main() {
     ilkCE,
     clipCE.address,
     "1333333333333333333333333333",
-    {gasLimit: 200000}
+    {gasLimit: 700000}
   );
 
   console.log("Vat config...");
