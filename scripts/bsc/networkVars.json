@@ -1,11 +1,11 @@
 {
   "BSC_MAINNET": "BSC_MAINNET_VARIABLES",
 
-  "m_aBNBc": "", 
-  "m_wBnb": "", 
-  "m_aBnbb": "", 
-  "m_dex": "", 
-  "m_pool": "",
+  "m_aBNBc": "0xE85aFCcDaFBE7F2B096f268e31ccE3da8dA2990A", 
+  "m_wBnb": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c", 
+  "m_aBnbb": "0xBb1Aa6e59E5163D8722a122cd66EBA614b59df0d", 
+  "m_dex": "0x10ED43C718714eb63d5aA57B78B54704E256024E", 
+  "m_pool": "0x66BEA595AEFD5a65799a920974b377Ed20071118",
   "m_chainID": "56",
 
 
@@ -13,9 +13,9 @@
 
   "t_aBNBc": "0x46dE2FBAf41499f298457cD2d9288df4Eb1452Ab", 
   "t_wBnb": "0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd", 
-  "t_aBnbb": "", 
+  "t_aBnbb": "0xaB56897fE4e9f0757e02B54C27E81B9ddd6A30AE", 
   "t_dex": "0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3", 
-  "t_pool": "",
+  "t_pool": "0x3C9205b5d4B312cA7C4d28110C91Fe2c74718a94",
   "t_chainID": "97",
 
 
