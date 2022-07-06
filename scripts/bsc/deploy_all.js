@@ -177,7 +177,9 @@ async function main() {
     ether("100000000").toString(), // pool limit
   ]);
   await rewards.deployed();
+  let rewardsImplementation = await upgrades.erc1967.getImplementationAddress(rewards.address);
   console.log("Deployed: rewards    : " + rewards.address);
+  console.log("Imp                  : " + rewardsImplementation);
 
     // No Helio Token & Oracle at the moment
     // const helioOracle = await upgrades.deployProxy(this.HelioOracle, [
@@ -223,7 +225,9 @@ async function main() {
     }
   );
   await interaction.deployed();
-  console.log("Deployed: Interaction:", interaction.address);
+  let interactionImplementation = await upgrades.erc1967.getImplementationAddress(interaction.address);
+  console.log("Deployed: Interaction: " + interaction.address);
+  console.log("Imp                  : " + interactionImplementation);
 
   let helioProvider = await upgrades.deployProxy(this.HelioProvider, [hBNB.address, _aBNBc, ceaBNBc.address, cerosRouter.address, interaction.address, _pool], {initializer: "initialize"});
   await helioProvider.deployed();
@@ -371,10 +375,12 @@ async function main() {
     dog: dog.address,
     clipCE: clipCE.address,
     rewards: rewards.address,
+    rewardsImplementation: rewardsImplementation,
     // helioOracle: helioOracle.address,
     // helioToken: helioToken.address,
     auctionProxy: auctionProxy.address,
     interaction: interaction.address,
+    interactionImplementation: interactionImplementation,
     ceaBNBc: ceaBNBc.address,
     ceaBNBcImplementation: ceaBNBcImplementation,
     ceVault: ceVault.address,
@@ -492,12 +498,9 @@ async function main() {
     ],
   });
   // Rewards
-  let rewardsImplAddress = await upgrades.erc1967.getImplementationAddress(
-    rewards.address
-  );
   console.log("rewardsImplAddress implementation: ", rewardsImplAddress);
   await hre.run("verify:verify", {
-    address: rewardsImplAddress,
+    address: rewardsImplementation,
   });
 
     // await hre.run("verify:verify", {
@@ -513,13 +516,8 @@ async function main() {
     address: auctionProxy.address,
   });
 
-  let interactionImplAddress = await upgrades.erc1967.getImplementationAddress(
-    interaction.address
-  );
-  console.log("Interaction implementation: ", interactionImplAddress);
-
   await hre.run("verify:verify", {
-    address: interactionImplAddress,
+    address: interactionImplementation,
   });
 
   console.log("Finished");
